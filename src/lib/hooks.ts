@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
+import { JobItem } from "./types";
 
 export function useJobItems(searchText: string) {
-  const [jobItems, setJobItems] = useState([]);
+  const [jobItems, setJobItems] = useState<JobItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+
+  const jobItemsSliced = jobItems.slice(0, 7);
 
   useEffect(() => {
     const fetchData = async (searchText: string) => {
@@ -18,8 +21,12 @@ export function useJobItems(searchText: string) {
 
         const data = await response.json();
         setJobItems(data.jobItems);
-      } catch (error: Error) {
-        console.log(error.message);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error.message);
+        } else {
+          console.log(error);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -28,5 +35,5 @@ export function useJobItems(searchText: string) {
     fetchData(searchText);
   }, [searchText]);
 
-  return { jobItems, isLoading };
+  return [jobItemsSliced, isLoading] as const;
 }
