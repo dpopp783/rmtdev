@@ -1,6 +1,25 @@
 import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
-import { JobItem } from "./types";
+import { JobItem, JobItemFull } from "./types";
+
+export function useActiveId() {
+  const [activeId, setActiveId] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveId(+window.location.hash.slice(1));
+    };
+    handleHashChange();
+
+    window.addEventListener("hashchange", handleHashChange);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+    };
+  }, []);
+
+  return activeId;
+}
 
 export function useJobItems(searchText: string) {
   const [jobItems, setJobItems] = useState<JobItem[]>([]);
@@ -36,4 +55,38 @@ export function useJobItems(searchText: string) {
   }, [searchText]);
 
   return [jobItemsSliced, isLoading] as const;
+}
+
+export function useJobItem(id: number | null) {
+  const [jobItem, setJobItem] = useState<JobItemFull | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchData = async (id: number) => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(`${API_BASE_URL}/${id}`);
+        if (!response.ok) {
+          throw new Error(`Unable to fetch job ${id} from server`);
+        }
+        const data = await response.json();
+        console.log(data);
+        setJobItem(data.jobItem);
+      } catch (error) {
+        if (error instanceof Error) {
+          console.log(error.message);
+        } else {
+          console.log(`Error: ${error}`);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData(id);
+  }, [id]);
+
+  return [jobItem, isLoading] as const;
 }
