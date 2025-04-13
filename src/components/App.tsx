@@ -9,12 +9,19 @@ import Sidebar, { SidebarTop } from "./Sidebar";
 import JobItemContent from "./JobItemContent";
 import JobList from "./JobList";
 import PaginationControls from "./PaginationControls";
-import { useJobItems } from "../lib/hooks";
+import { useDebounce, useJobItems } from "../lib/hooks";
 import { useState } from "react";
+import ResultsCount from "./ResultsCount";
+import SortingControls from "./SortingControls";
 
 function App() {
   const [searchText, setSearchText] = useState("");
-  const [jobItems, isLoading] = useJobItems(searchText);
+  const debouncedSearchText = useDebounce(searchText, 250);
+  const {
+    jobItemsSliced: jobItems,
+    isLoading,
+    resultsCount,
+  } = useJobItems(debouncedSearchText);
 
   return (
     <>
@@ -28,7 +35,10 @@ function App() {
       </Header>
       <Container>
         <Sidebar>
-          <SidebarTop />
+          <SidebarTop>
+            <ResultsCount resultsCount={resultsCount} />
+            <SortingControls />
+          </SidebarTop>
           <JobList jobItems={jobItems} isLoading={isLoading} />
 
           <PaginationControls />
