@@ -14,14 +14,34 @@ import { useState } from "react";
 import ResultsCount from "./ResultsCount";
 import SortingControls from "./SortingControls";
 import { Toaster } from "react-hot-toast";
+import { RESULTS_PER_PAGE } from "../lib/constants";
 
 function App() {
+  // state
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 250);
   const { jobItems, isLoading } = useJobItems(debouncedSearchText);
+  const [currentPage, setCurrentPage] = useState(1);
 
+  // derived state
   const resultsCount = jobItems?.length || 0;
-  const jobItemsSliced = jobItems?.slice(0, 7) || [];
+
+  const maxPage = Math.ceil(resultsCount / 7);
+
+  const jobItemsSliced =
+    jobItems?.slice(
+      (currentPage - 1) * RESULTS_PER_PAGE,
+      currentPage * RESULTS_PER_PAGE
+    ) || [];
+
+  // event handlers / actions
+  const handleChangePage = (direction: "next" | "back") => {
+    if (direction === "next") {
+      setCurrentPage((prev) => Math.min(maxPage, prev + 1));
+    } else if (direction === "back") {
+      setCurrentPage((prev) => Math.max(1, prev - 1));
+    }
+  };
 
   return (
     <>
@@ -41,7 +61,11 @@ function App() {
           </SidebarTop>
           <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
 
-          <PaginationControls />
+          <PaginationControls
+            onClick={handleChangePage}
+            currentPage={currentPage}
+            maxPage={maxPage}
+          />
         </Sidebar>
         <JobItemContent />
       </Container>
