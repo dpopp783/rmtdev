@@ -13,15 +13,15 @@ import { useDebounce, useJobItems } from "../lib/hooks";
 import { useState } from "react";
 import ResultsCount from "./ResultsCount";
 import SortingControls from "./SortingControls";
+import { Toaster } from "react-hot-toast";
 
 function App() {
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 250);
-  const {
-    jobItemsSliced: jobItems,
-    isLoading,
-    resultsCount,
-  } = useJobItems(debouncedSearchText);
+  const { jobItems, isLoading } = useJobItems(debouncedSearchText);
+
+  const resultsCount = jobItems?.length || 0;
+  const jobItemsSliced = jobItems?.slice(0, 7) || [];
 
   return (
     <>
@@ -39,13 +39,16 @@ function App() {
             <ResultsCount resultsCount={resultsCount} />
             <SortingControls />
           </SidebarTop>
-          <JobList jobItems={jobItems} isLoading={isLoading} />
+          <JobList jobItems={jobItemsSliced} isLoading={isLoading} />
 
           <PaginationControls />
         </Sidebar>
         <JobItemContent />
       </Container>
-      <Footer></Footer>
+
+      <Footer />
+
+      <Toaster position="top-right" />
     </>
   );
 }
