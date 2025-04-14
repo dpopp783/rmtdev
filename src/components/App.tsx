@@ -9,7 +9,7 @@ import Sidebar, { SidebarTop } from "./Sidebar";
 import JobItemContent from "./JobItemContent";
 import JobList from "./JobList";
 import PaginationControls from "./PaginationControls";
-import { useDebounce, useJobItems } from "../lib/hooks";
+import { useDebounce, useSearchQuery } from "../lib/hooks";
 import { useState } from "react";
 import ResultsCount from "./ResultsCount";
 import SortingControls from "./SortingControls";
@@ -21,7 +21,7 @@ function App() {
   // state
   const [searchText, setSearchText] = useState("");
   const debouncedSearchText = useDebounce(searchText, 250);
-  const { jobItems, isLoading } = useJobItems(debouncedSearchText);
+  const { jobItems, isLoading } = useSearchQuery(debouncedSearchText);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<SortByOptions>("relevant");
 

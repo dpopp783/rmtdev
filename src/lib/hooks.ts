@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
 import { JobItem, JobItemFull } from "./types";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
 import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 
@@ -31,12 +31,37 @@ export function useJobItem(id: number | null) {
       refetchOnWindowFocus: false,
       retry: false,
       enabled: Boolean(id),
-      onError: (error) => handleError(error),
+      onError: handleError,
     }
   );
 
   return { jobItem: data?.jobItem, isLoading: isInitialLoading };
 }
+
+// -----------------------------------------------
+
+export function useJobItems(ids: number[]) {
+  const results = useQueries({
+    queries: ids.map((id) => ({
+      queryKey: ["job-item", id],
+      queryFn: () => fetchJobItem(id),
+      staleTime: 1000 * 60 * 60,
+      refetchOnWindowFocus: false,
+      retry: false,
+      enabled: Boolean(id),
+      onError: handleError,
+    })),
+  });
+
+  const jobItems = results
+    .map((result) => result.data?.jobItem)
+    .filter((jobItem) => jobItem !== undefined);
+  const isLoading = results.some((result) => result.isLoading);
+
+  return { jobItems, isLoading };
+}
+
+// -----------------------------------------------
 
 type JobItemsApiResponse = {
   public: boolean;
@@ -56,7 +81,7 @@ const fetchJobItems = async (
   return data;
 };
 
-export function useJobItems(searchText: string) {
+export function useSearchQuery(searchText: string) {
   const { data, isInitialLoading } = useQuery(
     ["job-items", searchText],
     () => {
@@ -73,6 +98,8 @@ export function useJobItems(searchText: string) {
 
   return { jobItems: data?.jobItems, isLoading: isInitialLoading };
 }
+
+// ------------------------------------------------------------
 
 export function useDebounce<T>(value: T, delay = 500): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -114,6 +141,25 @@ export function useLocalStorage<T>(key: string, initialValue: T) {
   }, [value, key]);
 
   return [value, setValue] as const;
+}
+
+export function useOnClickOutside(
+  refs: React.RefObject<HTMLElement>[],
+  onClickOutside: () => void
+) {
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      if (refs.every((ref) => !ref.current?.contains(event.target as Node))) {
+        onClickOutside();
+      }
+    };
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [refs, onClickOutside]);
 }
 
 // ------ CONTEXT HOOKS ---------------
