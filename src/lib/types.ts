@@ -18,3 +18,7 @@ export type JobItemFull = JobItem & {
   coverImgURL: string;
   companyURL: string;
 };
+
+export const sortByOptionsArr = ["relevant", "recent"] as const;
+export type SortByOptions = (typeof sortByOptionsArr)[number];
+export type PaginationDirection = "next" | "back";
