@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
 import { JobItem, JobItemFull } from "./types";
 import { useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
+import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 
 type JobItemApiResponse = {
   public: boolean;
@@ -101,4 +102,29 @@ export function useActiveId() {
   }, []);
 
   return activeId;
+}
+
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  const [value, setValue] = useState<T>(() =>
+    JSON.parse(localStorage.getItem(key) || JSON.stringify(initialValue))
+  );
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(value));
+  }, [value, key]);
+
+  return [value, setValue] as const;
+}
+
+// ------ CONTEXT HOOKS ---------------
+export function useBookmarksContext() {
+  const context = useContext(BookmarksContext);
+
+  if (!context) {
+    throw new Error(
+      `useBookmarksContext cannot be used outside a BookmarksContextProvider`
+    );
+  }
+
+  return context;
 }
