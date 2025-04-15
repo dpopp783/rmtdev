@@ -20,5 +20,5 @@ export type JobItemFull = JobItem & {
 };
 
 export const sortByOptionsArr = ["relevant", "recent"] as const;
-export type SortByOptions = (typeof sortByOptionsArr)[number];
+export type SortByOption = (typeof sortByOptionsArr)[number];
 export type PaginationDirection = "next" | "back";

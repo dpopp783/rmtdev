@@ -1,9 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { API_BASE_URL } from "./constants";
 import { JobItem, JobItemFull } from "./types";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { handleError } from "./utils";
-import { BookmarksContext } from "../contexts/BookmarksContextProvider";
 
 type JobItemApiResponse = {
   public: boolean;
@@ -160,17 +159,4 @@ export function useOnClickOutside(
       document.removeEventListener("click", handleClick);
     };
   }, [refs, onClickOutside]);
-}
-
-// ------ CONTEXT HOOKS ---------------
-export function useBookmarksContext() {
-  const context = useContext(BookmarksContext);
-
-  if (!context) {
-    throw new Error(
-      `useBookmarksContext cannot be used outside a BookmarksContextProvider`
-    );
-  }
-
-  return context;
 }
